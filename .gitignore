@@ -10,6 +10,13 @@
 *.ilk
 *.pdf
 
+*.pdb
+*.idb
+*.manifest
+*.res
+*.lastbuildstate
+*.cache
+*.recipe
 # Precompiled Headers
 *.gch
 *.pch
