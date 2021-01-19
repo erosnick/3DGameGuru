@@ -206,11 +206,50 @@ void MoveStars(void)
 		stars[index].x += stars[index].vel;
 
 		if (stars[index].x >= windowWidth)
-			stars[index].x -= windowHeight;
+			stars[index].x = 0;
 
 	} // end for index
 
 } // end Move_Stars
+
+int GameInit()
+{
+    hdc = GetDC(mainWindow);
+
+	RECT rect;
+
+	GetClientRect(mainWindow, &rect);
+
+	windowWidth = rect.right - rect.left;
+	windowHeight = rect.bottom - rect.top;
+
+	int x1 = rand() % windowWidth;
+	int y1 = rand() % windowHeight;
+	int x2 = rand() % windowWidth;
+	int y2 = rand() % windowHeight;
+
+	whiteBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);
+
+	srand(timeGetTime());
+
+    InitStars();
+
+    return 0;
+}
+
+void GameMain()
+{
+    EraseStars();
+
+    MoveStars();
+
+    DrawStars();
+}
+
+void GameShutdown()
+{
+    ReleaseDC(mainWindow, hdc);
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -235,36 +274,20 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_WIN32));
 
-    hdc = GetDC(mainWindow);
-
     MSG msg;
 
     ZeroMemory(&msg, sizeof(MSG));
 
-    RECT rect;
-
-    GetClientRect(mainWindow, &rect);
-
-    WindowWidth = rect.right - rect.left;
-    WindowHeight = rect.bottom - rect.top;
-
-	int x1 = rand() % WindowWidth;
-	int y1 = rand() % WindowHeight;
-	int x2 = rand() % WindowWidth;
-	int y2 = rand() % WindowHeight;
-
-    whiteBrush = (HBRUSH)GetStockObject(WHITE_BRUSH);
-
-    srand(timeGetTime());
+    GameInit();
 
     int64_t simulatedTime = GetTickCount64();
 
     //  «∑Ò”– Û±Í
     GetSystemMetrics(SM_MOUSEPRESENT);
 
-    LPTEXTMETRIC textMetric;
+    TEXTMETRIC textMetric;
 
-    GetTextMetrics(hdc, textMetric);
+    GetTextMetrics(hdc, &textMetric);
 
     // Main message loop:
     while (msg.message != WM_QUIT)
@@ -289,20 +312,11 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         {
             simulatedTime += 16;
 
-            //Draw();
-            DrawLineScreenSaver();
+            GameMain();
         }
-
-        //SetTextColor(hdc, RGB(rand() % 256, rand() % 256, rand() % 256));
-
-        //SetBkColor(hdc, RGB(0, 0, 0));
-
-        //SetBkMode(hdc, TRANSPARENT);
-
-        //TextOut(hdc, rand() % width, rand() % height, L"GDI Text Demo!", strlen("GDI Text Demo!"));
     }
 
-    ReleaseDC(mainWindow, hdc);
+    GameShutdown();
 
     return (int) msg.wParam;
 }
@@ -328,7 +342,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hIcon          = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_ICON1));
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_ICON1));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
+    wcex.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
     wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_WIN32);
     wcex.lpszClassName  = szWindowClass;
 
