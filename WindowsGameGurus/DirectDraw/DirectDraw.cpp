@@ -8,6 +8,8 @@
 #include <timeapi.h>
 #include <cstdio>
 
+#pragma pack(1)
+
 #define MAX_LOADSTRING 100
 
 const int SCREEN_WIDTH = 1920;
@@ -70,6 +72,18 @@ struct HappyFace
 	int vx;
 	int vy;
 };
+
+struct Bitmap
+{
+	int width;
+	int height;
+	int bpp;
+	int imageSize;
+	int bytesPerLine;
+	UCHAR* imageData;
+};
+
+Bitmap bitmap;
 
 HappyFace happyFaces[100];
 
@@ -345,7 +359,7 @@ void Unlock(LPDIRECTDRAWSURFACE7 surface)
 	}
 }
 
-UCHAR* MyLoadBitmap(const TCHAR* fileName)
+void MyLoadBitmap(const TCHAR* fileName, Bitmap* bitmap)
 {
 	// struct BITMAPFILEHEADER {
 	//	WORD    bfType;
@@ -370,7 +384,7 @@ UCHAR* MyLoadBitmap(const TCHAR* fileName)
 
 		MessageBox(nullptr, buffer, L"Error", MB_OK);
 
-		return nullptr;
+		return;
 	}
 
 	UCHAR* bitmapData = nullptr;
@@ -379,11 +393,83 @@ UCHAR* MyLoadBitmap(const TCHAR* fileName)
 	{
 		fread_s(&bitmapHeader, headerSize, headerSize, 1, file);
 
-		DWORD dataSize = bitmapHeader.bfSize;
+		if (bitmapHeader.bfType != 0x4D42)
+		{
+			MessageBox(nullptr, L"Not bitmap file.", L"Error", MB_OK);
+
+			return;
+		}
+
+		size_t bitmapInfoSize = sizeof(BITMAPINFO);
+
+		BITMAPINFO bitmapInfo;
+
+		ZeroMemory(&bitmapInfo, bitmapInfoSize);
+
+		fread_s(&bitmapInfo, bitmapInfoSize, bitmapInfoSize, 1, file);
+
+		bitmap->width = bitmapInfo.bmiHeader.biWidth;
+		bitmap->height = bitmapInfo.bmiHeader.biHeight;
+		bitmap->bpp = bitmapInfo.bmiHeader.biBitCount;
+		bitmap->imageSize = bitmapInfo.bmiHeader.biSizeImage;
+
+		int bytePerPixel = bitmap->bpp / 8;
+
+		bitmap->bytesPerLine = bitmap->width * bytePerPixel;
+
+		if (bitmap->imageSize != bitmap->width * bitmap->height * bytePerPixel)
+		{
+			// 24位位图，每个像素占3字节，每个颜色分量占8位
+			// 例子：图像宽度为5像素，字节数为5 * 3 = 15(byte)，不能被4整除
+			// (5 * 24 + 31) / 8 = 18(byte)
+			// 18 / 4 * 4 = 16，正好可以被4整除。
+			// 加31的作用是补3个字节(31 / 8 = 3)，1字节补3字节正好是4字节；
+			// 2字节补3字节为5，可以通过5 / 4 * 4去掉多余的字节(整数除法丢弃结果小数部分)，以此类推。
+			int dataSizePerLine = (bitmap->width * bitmap->bpp + 31) / 8;
+
+			dataSizePerLine = dataSizePerLine / 4 * 4;
+
+			bitmap->bytesPerLine = dataSizePerLine;
+
+			bitmap->imageSize = bitmap->bytesPerLine * bitmap->height;
+		}
+
+		bitmap->imageData = new UCHAR[bitmap->imageSize];
+
+		fseek(file, -bitmap->imageSize, SEEK_END);
+
+		int read = fread_s(bitmap->imageData, bitmap->imageSize, bitmap->imageSize, 1, file);
+
+		if (read == 0)
+		{
+			MessageBox(nullptr, L"Read file failed.", L"Error", MB_OK);
+		}
+	}
+}
+
+int FlipBitmap(UCHAR* image, int bytesPerLine, int height)
+{
+	// this function is used to flip bottom-up .BMP images
+	int loop = height / 2;
+
+	UCHAR* swapBuffer = (UCHAR*)(new UCHAR[bytesPerLine]);
+
+	// Swap in place reduce copy count
+	for (int i = 0; i < loop; i++)
+	{
+		memcpy_s(swapBuffer, bytesPerLine, &image[i * bytesPerLine], bytesPerLine);
+
+		memcpy_s(&image[i * bytesPerLine], bytesPerLine, &image[bytesPerLine * height - (i + 1) * bytesPerLine], bytesPerLine);
+
+		memcpy_s(&image[bytesPerLine * height - (i + 1) * bytesPerLine], bytesPerLine, swapBuffer, bytesPerLine);
 	}
 
-	return bitmapData;
-}
+	delete[] swapBuffer;
+
+	// return success
+	return(1);
+
+} // end Flip_Bitmap
 
 bool GameInit()
 {
@@ -399,7 +485,9 @@ bool GameInit()
 		happyFaces[i].vy = -5 + rand() % 10;
 	}
 
-	MyLoadBitmap(L"kitten.bmp");
+	MyLoadBitmap(L"kitten.bmp", &bitmap);
+
+	FlipBitmap(bitmap.imageData, bitmap.bytesPerLine, bitmap.height);
 
 	return true;
 }
@@ -448,15 +536,25 @@ bool GameMain()
 	//	return false;
 	//}
 
+	int pixelOffset = bitmap.bpp / 8;
+
 	Lock(secondarySurface);
 
-	//for (size_t i = 0; i < 10000; i++)
-	//{
-	//	int x = rand() % SCREEN_WIDTH;
-	//	int y = rand() % SCREEN_HEIGHT;
+	for (size_t y = 0; y < bitmap.height; y++)
+	{
+		for (size_t x = 0; x < bitmap.width; x++)
+		{
+			int index = y * bitmap.bytesPerLine  + x * pixelOffset;
 
-	//	PlotPixel(x, y, RANDOM_COLOR());
-	//}
+			UCHAR b = bitmap.imageData[index];
+			UCHAR g = bitmap.imageData[index + 1];
+			UCHAR r = bitmap.imageData[index + 2];
+
+			int color = RGB32(255, r, g, b);
+
+			PlotPixel(x, y, color);
+		}
+	}
 
 	//for (int i = 0; i < SCREEN_HEIGHT; i++)
 	//{
@@ -465,46 +563,46 @@ bool GameMain()
 	//	videoBuffer += memoryPitch;
 	//}
 
-	RECT clipRect = { 0, 0, 100, 100 };
+	//RECT clipRect = { 0, 0, 100, 100 };
 
-	for (size_t i = 0; i < 100; i++)
-	{
-		BlitClipped(happyFaces[i].x, happyFaces[i].y , 16, 16, happyBitmap, videoBuffer, memoryPitch, clipRect);
-	}
+	//for (size_t i = 0; i < 100; i++)
+	//{
+	//	BlitClipped(happyFaces[i].x, happyFaces[i].y , 16, 16, happyBitmap, videoBuffer, memoryPitch, clipRect);
+	//}
 
-	for (size_t i = 0; i < 100; i++)
-	{
-		// Move
-		happyFaces[i].x += happyFaces[i].vx;
-		happyFaces[i].y += happyFaces[i].vy;
+	//for (size_t i = 0; i < 100; i++)
+	//{
+	//	// Move
+	//	happyFaces[i].x += happyFaces[i].vx;
+	//	happyFaces[i].y += happyFaces[i].vy;
 
-		// Check for off screen, if so wrap
-		if (happyFaces[i].x > SCREEN_WIDTH)
-		{
-			happyFaces[i].x = -8;
-			happyFaces[i].vx = -5 + rand() % 8;
-			happyFaces[i].vy = -5 + rand() % 10;
-		}
-		else if (happyFaces[i].x < -8)
-		{
-			happyFaces[i].x = SCREEN_WIDTH;
-			happyFaces[i].vx = -5 + rand() % 8;
-			happyFaces[i].vy = -5 + rand() % 10;
-		}
+	//	// Check for off screen, if so wrap
+	//	if (happyFaces[i].x > SCREEN_WIDTH)
+	//	{
+	//		happyFaces[i].x = -8;
+	//		happyFaces[i].vx = -5 + rand() % 8;
+	//		happyFaces[i].vy = -5 + rand() % 10;
+	//	}
+	//	else if (happyFaces[i].x < -8)
+	//	{
+	//		happyFaces[i].x = SCREEN_WIDTH;
+	//		happyFaces[i].vx = -5 + rand() % 8;
+	//		happyFaces[i].vy = -5 + rand() % 10;
+	//	}
 
-		if (happyFaces[i].y > SCREEN_HEIGHT)
-		{
-			happyFaces[i].y = -8;
-			happyFaces[i].vx = -5 + rand() % 8;
-			happyFaces[i].vy = -5 + rand() % 10;
-		}
-		else if (happyFaces[i].y < -8)
-		{
-			happyFaces[i].y = SCREEN_HEIGHT;
-			happyFaces[i].vx = -5 + rand() % 8;
-			happyFaces[i].vy = -5 + rand() % 10;
-		}
-	}
+	//	if (happyFaces[i].y > SCREEN_HEIGHT)
+	//	{
+	//		happyFaces[i].y = -8;
+	//		happyFaces[i].vx = -5 + rand() % 8;
+	//		happyFaces[i].vy = -5 + rand() % 10;
+	//	}
+	//	else if (happyFaces[i].y < -8)
+	//	{
+	//		happyFaces[i].y = SCREEN_HEIGHT;
+	//		happyFaces[i].vx = -5 + rand() % 8;
+	//		happyFaces[i].vy = -5 + rand() % 10;
+	//	}
+	//}
 
 	Unlock(secondarySurface);
 
