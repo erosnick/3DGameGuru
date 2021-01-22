@@ -9,128 +9,27 @@
 #include <cstdio>
 #include <vector>
 #include <memory>
+#include <windowsx.h>
 
-const WCHAR* DDErrorString(HRESULT hr)
-{
-	switch (hr)
-	{
-		case DDERR_ALREADYINITIALIZED:           return L"DDERR_ALREADYINITIALIZED";
-		case DDERR_CANNOTATTACHSURFACE:          return L"DDERR_CANNOTATTACHSURFACE";
-		case DDERR_CANNOTDETACHSURFACE:          return L"DDERR_CANNOTDETACHSURFACE";
-		case DDERR_CURRENTLYNOTAVAIL:            return L"DDERR_CURRENTLYNOTAVAIL";
-		case DDERR_EXCEPTION:                    return L"DDERR_EXCEPTION";
-		case DDERR_GENERIC:                      return L"DDERR_GENERIC";
-		case DDERR_HEIGHTALIGN:                  return L"DDERR_HEIGHTALIGN";
-		case DDERR_INCOMPATIBLEPRIMARY:          return L"DDERR_INCOMPATIBLEPRIMARY";
-		case DDERR_INVALIDCAPS:                  return L"DDERR_INVALIDCAPS";
-		case DDERR_INVALIDCLIPLIST:              return L"DDERR_INVALIDCLIPLIST";
-		case DDERR_INVALIDMODE:                  return L"DDERR_INVALIDMODE";
-		case DDERR_INVALIDOBJECT:                return L"DDERR_INVALIDOBJECT";
-		case DDERR_INVALIDPARAMS:                return L"DDERR_INVALIDPARAMS";
-		case DDERR_INVALIDPIXELFORMAT:           return L"DDERR_INVALIDPIXELFORMAT";
-		case DDERR_INVALIDRECT:                  return L"DDERR_INVALIDRECT";
-		case DDERR_LOCKEDSURFACES:               return L"DDERR_LOCKEDSURFACES";
-		case DDERR_NO3D:                         return L"DDERR_NO3D";
-		case DDERR_NOALPHAHW:                    return L"DDERR_NOALPHAHW";
-		case DDERR_NOCLIPLIST:                   return L"DDERR_NOCLIPLIST";
-		case DDERR_NOCOLORCONVHW:                return L"DDERR_NOCOLORCONVHW";
-		case DDERR_NOCOOPERATIVELEVELSET:        return L"DDERR_NOCOOPERATIVELEVELSET";
-		case DDERR_NOCOLORKEY:                   return L"DDERR_NOCOLORKEY";
-		case DDERR_NOCOLORKEYHW:                 return L"DDERR_NOCOLORKEYHW";
-		case DDERR_NODIRECTDRAWSUPPORT:          return L"DDERR_NODIRECTDRAWSUPPORT";
-		case DDERR_NOEXCLUSIVEMODE:              return L"DDERR_NOEXCLUSIVEMODE";
-		case DDERR_NOFLIPHW:                     return L"DDERR_NOFLIPHW";
-		case DDERR_NOGDI:                        return L"DDERR_NOGDI";
-		case DDERR_NOMIRRORHW:                   return L"DDERR_NOMIRRORHW";
-		case DDERR_NOTFOUND:                     return L"DDERR_NOTFOUND";
-		case DDERR_NOOVERLAYHW:                  return L"DDERR_NOOVERLAYHW";
-		case DDERR_NORASTEROPHW:                 return L"DDERR_NORASTEROPHW";
-		case DDERR_NOROTATIONHW:                 return L"DDERR_NOROTATIONHW";
-		case DDERR_NOSTRETCHHW:                  return L"DDERR_NOSTRETCHHW";
-		case DDERR_NOT4BITCOLOR:                 return L"DDERR_NOT4BITCOLOR";
-		case DDERR_NOT4BITCOLORINDEX:            return L"DDERR_NOT4BITCOLORINDEX";
-		case DDERR_NOT8BITCOLOR:                 return L"DDERR_NOT8BITCOLOR";
-		case DDERR_NOTEXTUREHW:                  return L"DDERR_NOTEXTUREHW";
-		case DDERR_NOVSYNCHW:                    return L"DDERR_NOVSYNCHW";
-		case DDERR_NOZBUFFERHW:                  return L"DDERR_NOZBUFFERHW";
-		case DDERR_NOZOVERLAYHW:                 return L"DDERR_NOZOVERLAYHW";
-		case DDERR_OUTOFCAPS:                    return L"DDERR_OUTOFCAPS";
-		case DDERR_OUTOFMEMORY:                  return L"DDERR_OUTOFMEMORY";
-		case DDERR_OUTOFVIDEOMEMORY:             return L"DDERR_OUTOFVIDEOMEMORY";
-		case DDERR_OVERLAYCANTCLIP:              return L"DDERR_OVERLAYCANTCLIP";
-		case DDERR_OVERLAYCOLORKEYONLYONEACTIVE: return L"DDERR_OVERLAYCOLORKEYONLYONEACTIVE";
-		case DDERR_PALETTEBUSY:                  return L"DDERR_PALETTEBUSY";
-		case DDERR_COLORKEYNOTSET:               return L"DDERR_COLORKEYNOTSET";
-		case DDERR_SURFACEALREADYATTACHED:       return L"DDERR_SURFACEALREADYATTACHED";
-		case DDERR_SURFACEALREADYDEPENDENT:      return L"DDERR_SURFACEALREADYDEPENDENT";
-		case DDERR_SURFACEBUSY:                  return L"DDERR_SURFACEBUSY";
-		case DDERR_CANTLOCKSURFACE:              return L"DDERR_CANTLOCKSURFACE";
-		case DDERR_SURFACEISOBSCURED:            return L"DDERR_SURFACEISOBSCURED";
-		case DDERR_SURFACELOST:                  return L"DDERR_SURFACELOST";
-		case DDERR_SURFACENOTATTACHED:           return L"DDERR_SURFACENOTATTACHED";
-		case DDERR_TOOBIGHEIGHT:                 return L"DDERR_TOOBIGHEIGHT";
-		case DDERR_TOOBIGSIZE:                   return L"DDERR_TOOBIGSIZE";
-		case DDERR_TOOBIGWIDTH:                  return L"DDERR_TOOBIGWIDTH";
-		case DDERR_UNSUPPORTED:                  return L"DDERR_UNSUPPORTED";
-		case DDERR_UNSUPPORTEDFORMAT:            return L"DDERR_UNSUPPORTEDFORMAT";
-		case DDERR_UNSUPPORTEDMASK:              return L"DDERR_UNSUPPORTEDMASK";
-		case DDERR_VERTICALBLANKINPROGRESS:      return L"DDERR_VERTICALBLANKINPROGRESS";
-		case DDERR_WASSTILLDRAWING:              return L"DDERR_WASSTILLDRAWING";
-		case DDERR_XALIGN:                       return L"DDERR_XALIGN";
-		case DDERR_INVALIDDIRECTDRAWGUID:        return L"DDERR_INVALIDDIRECTDRAWGUID";
-		case DDERR_DIRECTDRAWALREADYCREATED:     return L"DDERR_DIRECTDRAWALREADYCREATED";
-		case DDERR_NODIRECTDRAWHW:               return L"DDERR_NODIRECTDRAWHW";
-		case DDERR_PRIMARYSURFACEALREADYEXISTS:  return L"DDERR_PRIMARYSURFACEALREADYEXISTS";
-		case DDERR_NOEMULATION:                  return L"DDERR_NOEMULATION";
-		case DDERR_REGIONTOOSMALL:               return L"DDERR_REGIONTOOSMALL";
-		case DDERR_CLIPPERISUSINGHWND:           return L"DDERR_CLIPPERISUSINGHWND";
-		case DDERR_NOCLIPPERATTACHED:            return L"DDERR_NOCLIPPERATTACHED";
-		case DDERR_NOHWND:                       return L"DDERR_NOHWND";
-		case DDERR_HWNDSUBCLASSED:               return L"DDERR_HWNDSUBCLASSED";
-		case DDERR_HWNDALREADYSET:               return L"DDERR_HWNDALREADYSET";
-		case DDERR_NOPALETTEATTACHED:            return L"DDERR_NOPALETTEATTACHED";
-		case DDERR_NOPALETTEHW:                  return L"DDERR_NOPALETTEHW";
-		case DDERR_BLTFASTCANTCLIP:              return L"DDERR_BLTFASTCANTCLIP";
-		case DDERR_NOBLTHW:                      return L"DDERR_NOBLTHW";
-		case DDERR_NODDROPSHW:                   return L"DDERR_NODDROPSHW";
-		case DDERR_OVERLAYNOTVISIBLE:            return L"DDERR_OVERLAYNOTVISIBLE";
-		case DDERR_NOOVERLAYDEST:                return L"DDERR_NOOVERLAYDEST";
-		case DDERR_INVALIDPOSITION:              return L"DDERR_INVALIDPOSITION";
-		case DDERR_NOTAOVERLAYSURFACE:           return L"DDERR_NOTAOVERLAYSURFACE";
-		case DDERR_EXCLUSIVEMODEALREADYSET:      return L"DDERR_EXCLUSIVEMODEALREADYSET";
-		case DDERR_NOTFLIPPABLE:                 return L"DDERR_NOTFLIPPABLE";
-		case DDERR_CANTDUPLICATE:                return L"DDERR_CANTDUPLICATE";
-		case DDERR_NOTLOCKED:                    return L"DDERR_NOTLOCKED";
-		case DDERR_CANTCREATEDC:                 return L"DDERR_CANTCREATEDC";
-		case DDERR_NODC:                         return L"DDERR_NODC";
-		case DDERR_WRONGMODE:                    return L"DDERR_WRONGMODE";
-		case DDERR_IMPLICITLYCREATED:            return L"DDERR_IMPLICITLYCREATED";
-		case DDERR_NOTPALETTIZED:                return L"DDERR_NOTPALETTIZED";
-		case DDERR_UNSUPPORTEDMODE:              return L"DDERR_UNSUPPORTEDMODE";
-		case DDERR_NOMIPMAPHW:                   return L"DDERR_NOMIPMAPHW";
-		case DDERR_INVALIDSURFACETYPE:           return L"DDERR_INVALIDSURFACETYPE";
-		case DDERR_DCALREADYCREATED:             return L"DDERR_DCALREADYCREATED";
-		case DDERR_CANTPAGELOCK:                 return L"DDERR_CANTPAGELOCK";
-		case DDERR_CANTPAGEUNLOCK:               return L"DDERR_CANTPAGEUNLOCK";
-		case DDERR_NOTPAGELOCKED:                return L"DDERR_NOTPAGELOCKED";
-		case DDERR_NOTINITIALIZED:               return L"DDERR_NOTINITIALIZED";
-	}
-	return L"Unknown Error";
-}
+#include "Utils.h"
+
+#pragma warning(disable : 4244)
+#pragma warning(disable : 4389)
+#pragma warning(disable : 4018)
+#pragma warning(disable : 4267)
+#pragma warning(disable : 4838)
 
 #define MAX_LOADSTRING 100
 
 const int32_t SCREEN_WIDTH = 1920;
 const int32_t SCREEN_HEIGHT = 1080;
+const int32_t WINDOW_WIDTH = 1280;
+const int32_t WINDOW_HEIGHT = 720;
 const int32_t SCREEN_BPP = 32;
 
-int32_t tileSize = 128;
+RECT windowRect = { 0, 0, 1280, 720 };
 
-int32_t tileX = 0;
-
-float animTime = 0.0f;
-
-int32_t animFPS = 15;
+bool fullScreen = false;
 
 float positionX = 0;
 
@@ -145,7 +44,7 @@ TCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
+BOOL                InitInstance(HINSTANCE, int32_t);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
@@ -155,62 +54,7 @@ LPDIRECTDRAWSURFACE7 secondarySurface = nullptr;
 LPDIRECTDRAWCLIPPER clipper = nullptr;
 LPDIRECTDRAWSURFACE7 offScreenSurface = nullptr;
 
-#define RGB32(a, r, g, b) ((a & 255) << 24) + ((r & 255) << 16) + ((g & 255) << 8) + (b & 255)
-
-#define DDRAW_INIT_STRUCT(ddstruct) ZeroMemory(&ddstruct, sizeof(ddstruct)); ddstruct.dwSize = sizeof(ddstruct)
-
-#define  RANDOM_COLOR() RGB(rand() % 256, rand() % 256, rand() % 256)
-
-#define SAFE_RELEASE(pointer) pointer->Release(); pointer = nullptr
-
-bool DDFailedCheck(HRESULT hr, const TCHAR* szMessage)
-{
-	if (FAILED(hr))
-	{
-		TCHAR buffer[1024];
-		wsprintf(buffer, L"%s (%s)n", szMessage, DDErrorString(hr));
-		MessageBox(nullptr, buffer, L"Error", MB_OK);
-		OutputDebugString(buffer);
-		return true;
-	}
-
-	return false;
-}
-
-LPDIRECTDRAWSURFACE7 CreateSurface(int32_t width, int32_t height, int32_t memoryFlags = DDSCAPS_VIDEOMEMORY)
-{
-	DDSURFACEDESC2 surfaceDesc;
-	LPDIRECTDRAWSURFACE7 surface = nullptr;
-
-	DDRAW_INIT_STRUCT(surfaceDesc);
-
-	// Set to access caps, width, and height
-	surfaceDesc.dwFlags = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT | DDSD_CKSRCBLT;
-
-	// Set dimensions of the new bitmap surface
-	surfaceDesc.dwWidth = width;
-	surfaceDesc.dwHeight = height;
-
-	// Set surface to offscreen plain
-	surfaceDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | memoryFlags;
-
-	//surfaceDesc.ddckCKSrcBlt.dwColorSpaceLowValue = RGB32(255, 255, 255, 255);
-	//surfaceDesc.ddckCKSrcBlt.dwColorSpaceHighValue = RGB32(255, 255, 255, 255);
-
-	surfaceDesc.ddckCKSrcBlt.dwColorSpaceLowValue = 0;
-	surfaceDesc.ddckCKSrcBlt.dwColorSpaceHighValue = 0;
-
-	// Create the surface
-	if (DDFailedCheck(directDraw->CreateSurface(&surfaceDesc, &surface, nullptr), L"CreateSurface failed"))
-	{
-		return nullptr;
-	}
-
-	return surface;
-}
-
-EXTERN_C ULONG64 myAdd(ULONG64 u1, ULONG64 u2);
-EXTERN_C ULONG64 mySub(ULONG64 u1, ULONG64 u2);
+LPDIRECTDRAWSURFACE7 CreateSurface(int32_t width, int32_t height, int32_t memoryFlags = DDSCAPS_VIDEOMEMORY);
 
 // a low tech bitmap that uses palette entry 1 for the color :)
 UCHAR happyBitmap[256] = { 0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
@@ -250,24 +94,51 @@ struct Bitmap
 {
 	Bitmap()
 		: width(0),
-		height(0),
-		bpp(0),
-		imageSize(0),
-		bytesPerLine(0),
-		imageData(nullptr)
+		  height(0),
+		  bpp(0),
+		  imageSize(0),
+		  bytesPerLine(0),
+		  imageData(nullptr)
 	{}
 
-	Bitmap(const Bitmap& bitmap)
+	Bitmap(const Bitmap& bitmap) 
 	{
-		width = bitmap.width;
-		height = bitmap.height;
-		bpp = bitmap.bpp;
-		imageSize = bitmap.imageSize;
-		bytesPerLine = bitmap.bytesPerLine;
+		Assign(bitmap.width, bitmap.height, bitmap.bpp, bitmap.imageSize, bitmap.bytesPerLine);
 
 		imageData = new UCHAR[imageSize];
 
 		memcpy_s(imageData, imageSize, bitmap.imageData, bitmap.imageSize);
+	}
+
+	Bitmap& operator=(const Bitmap& bitmap)
+	{
+		Assign(bitmap.width, bitmap.height, bitmap.bpp, bitmap.imageSize, bitmap.bytesPerLine);
+
+		imageData = new UCHAR[imageSize];
+
+		memcpy_s(imageData, imageSize, bitmap.imageData, bitmap.imageSize);
+
+		return *this;
+	}
+
+	Bitmap& operator=(Bitmap&& bitmap) noexcept
+	{
+		Assign(bitmap.width, bitmap.height, bitmap.bpp, bitmap.imageSize, bitmap.bytesPerLine);
+
+		imageData = bitmap.imageData;
+
+		bitmap.imageData = nullptr;
+
+		return *this;
+	}
+
+	Bitmap(Bitmap&& bitmap) noexcept
+	{
+		Assign(bitmap.width, bitmap.height, bitmap.bpp, bitmap.imageSize, bitmap.bytesPerLine);
+
+		imageData = bitmap.imageData;
+
+		bitmap.imageData = nullptr;
 	}
 
 	~Bitmap() { delete[] imageData; }
@@ -278,30 +149,70 @@ struct Bitmap
 	int32_t imageSize;
 	int32_t bytesPerLine;
 	UCHAR* imageData;
+
+private:
+
+	void Assign(int32_t inWidth, int32_t inHeight, int32_t inBpp, 
+				int32_t inImageSize, int32_t inBytesPerLine)
+	{
+		width = inWidth;
+		height = inHeight;
+		bpp = inBpp;
+		imageSize = inImageSize;
+		bytesPerLine = inBytesPerLine;
+	}
 };
 
 struct Sprite
 {
 	Sprite() 
-	: x(0),
-	  y(0),
-	  surface(nullptr)
+	  : scale(1.0f),
+	    surface(nullptr)
 	{}
 
 	Sprite(const Sprite& sprite)
 	{
-		x = sprite.x;
-		y = sprite.y;
+		scale = sprite.scale;
 		bitmap = sprite.bitmap;
 
 		surface = CreateSurface(bitmap.width, bitmap.height);
 	}
+
+	Sprite(Sprite&& sprite) noexcept
+	{
+		scale = sprite.scale;
+		bitmap = sprite.bitmap;
+
+		surface = sprite.surface;
+
+		sprite.surface = nullptr;
+	}
+
+	Sprite& operator=(const Sprite& sprite)
+	{
+		scale = sprite.scale;
+		bitmap = sprite.bitmap;
+
+		surface = CreateSurface(bitmap.width, bitmap.height);
+
+		return *this;
+	}
+
+	Sprite& operator=(Sprite&& sprite) noexcept
+	{
+		scale = sprite.scale;
+		bitmap = sprite.bitmap;
+
+		surface = sprite.surface;
+
+		sprite.surface = nullptr;
+
+		return *this;
+	}
 	
 	~Sprite() { SAFE_RELEASE(surface); }
 
-	int32_t x;
-	int32_t y;
-
+	float scale;
 	Bitmap bitmap;
 	LPDIRECTDRAWSURFACE7 surface;
 };
@@ -363,7 +274,6 @@ public:
 	float animationFPS;
 };
 
-
 class Actor :public Renderable
 {
 public:
@@ -420,7 +330,35 @@ private:
 	Animator animator;
 };
 
+struct Vertex2D
+{
+	int32_t x;
+	int32_t y;
+};
+
+struct Polygon2D
+{
+	Polygon2D() {}
+	~Polygon2D() { delete[] vertices; }
+
+	int32_t x0 = 0;					// Position of center of polygon
+	int32_t y0 = 0;
+	int32_t xv = 0;					// Initial velocity
+	int32_t yv = 0;
+	int32_t state = 1;				// State of polygon
+	int32_t numVertices = 1;		// Number of vertices
+	uint32_t color = Color::Blue;
+
+	Vertex2D* vertices = nullptr;	// Pointer to vertex list
+};
+
 std::vector<std::shared_ptr<Actor>> renderables;
+
+std::shared_ptr<Polygon2D> triangle;
+
+Polygon2D triangles[100];
+
+int32_t triangleCount = 5;
 
 std::shared_ptr<Sprite> sprite;
 
@@ -430,7 +368,7 @@ struct VideoMemory
 	uint32_t* videoBuffer = nullptr;
 };
 
-Bitmap atlas;
+Bitmap bitmap;
 
 HappyFace happyFaces[100];
 
@@ -446,6 +384,41 @@ bool CheckSurfaces()
 
 	return true;
 }
+
+LPDIRECTDRAWCLIPPER AttachClipper(LPDIRECTDRAWSURFACE7 surface, int32_t numRects, LPRECT clipList);
+
+EXTERN_C ULONG64 myAdd(ULONG64 u1, ULONG64 u2);
+EXTERN_C ULONG64 mySub(ULONG64 u1, ULONG64 u2);
+
+int32_t FlipBitmap(UCHAR* image, int32_t bytesPerLine, int32_t height);
+
+void DrawBitmap(const Bitmap& bitmap, const VideoMemory& videoMemory);
+
+void DrawSprite(const std::shared_ptr<Sprite>& sprite, int32_t x, int32_t y);
+
+void DrawSprite(const std::shared_ptr<Sprite>& spriteSheet, int32_t x, int32_t y, int32_t tileX, int32_t tileY, RECT destRect, RECT sourceRect);
+
+void DrawRenderables(const std::vector<std::shared_ptr<Actor>>& renderables);
+
+void DrawClipLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t color, uint32_t* videoBuffer, int32_t pitch, RECT clipRect);
+
+bool ClipLine(int32_t& x1, int32_t& y1, int32_t& x2, int32_t& y2, RECT clipRect);
+
+bool DrawPolygon2D(Polygon2D* polygon, uint32_t* videoBuffer, int32_t pitch);
+
+void InitializeTriangles();
+
+void MoveTriangles();
+
+void DrawTriangles();
+
+void Clear(uint32_t color);
+
+bool Present();
+
+bool GameInit();
+bool GameMain();
+void GameShutdown();
 
 EXTERN_C void Fill(uint32_t width, uint32_t color, uint32_t* videoBuffer);
 //void Fill(uint32_t width, uint32_t color, uint32_t* videoBuffer)
@@ -541,13 +514,45 @@ UCHAR* bitmapBuffer, uint32_t* videoBuffer, int32_t memoryPitch, RECT clipRect)
 			// test for transparency and plot
 			if ((pixel = bitmapBuffer[indexX]))
 			{
-				videoBuffer[indexX] = RGB32(255, 255, 255, 0);
+				videoBuffer[indexX] = Color::Yellow;
 			}
 		}
 
 		videoBuffer += memoryPitch;
 		bitmapBuffer += bitmapWidth;
 	}
+}
+
+LPDIRECTDRAWSURFACE7 CreateSurface(int32_t width, int32_t height, int32_t memoryFlags)
+{
+	DDSURFACEDESC2 surfaceDesc;
+	LPDIRECTDRAWSURFACE7 surface = nullptr;
+
+	DDRAW_INIT_STRUCT(surfaceDesc);
+
+	// Set to access caps, width, and height
+	surfaceDesc.dwFlags = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT | DDSD_CKSRCBLT;
+
+	// Set dimensions of the new bitmap surface
+	surfaceDesc.dwWidth = width;
+	surfaceDesc.dwHeight = height;
+
+	// Set surface to offscreen plain
+	surfaceDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | memoryFlags;
+
+	//surfaceDesc.ddckCKSrcBlt.dwColorSpaceLowValue = RGB32(255, 255, 255, 255);
+	//surfaceDesc.ddckCKSrcBlt.dwColorSpaceHighValue = RGB32(255, 255, 255, 255);
+
+	surfaceDesc.ddckCKSrcBlt.dwColorSpaceLowValue = 0;
+	surfaceDesc.ddckCKSrcBlt.dwColorSpaceHighValue = 0;
+
+	// Create the surface
+	if (DDFailedCheck(directDraw->CreateSurface(&surfaceDesc, &surface, nullptr), L"CreateSurface failed"))
+	{
+		return nullptr;
+	}
+
+	return surface;
 }
 
 LPDIRECTDRAWCLIPPER AttachClipper(LPDIRECTDRAWSURFACE7 surface, int32_t numRects, LPRECT clipList)
@@ -630,48 +635,72 @@ bool InitDirectDraw()
         return false;
     }
 
-	if (DDFailedCheck(directDraw->SetCooperativeLevel(mainWindow, DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT), L"SetCooperativeLevel failed"))
+	if (fullScreen)
 	{
-		return false;
+		if (DDFailedCheck(directDraw->SetCooperativeLevel(mainWindow, DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT), L"SetCooperativeLevel failed"))
+		{
+			return false;
+		}
+	}
+	else
+	{
+		if (DDFailedCheck(directDraw->SetCooperativeLevel(mainWindow, DDSCL_NORMAL), L"SetCooperativeLevel failed"))
+		{
+			return false;
+		}
 	}
 
-	if (DDFailedCheck(directDraw->SetDisplayMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, 0, 0), L"SetDisplayMode failed"))
-	{
-		return false;
-	}
+	//if (DDFailedCheck(directDraw->SetDisplayMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, 0, 0), L"SetDisplayMode failed"))
+	//{
+	//	return false;
+	//}
 
 	DDSURFACEDESC2 surfaceDesc;
 
-	ZeroMemory(&surfaceDesc, sizeof(DDSURFACEDESC2));
+	DDRAW_INIT_STRUCT(surfaceDesc);
 
-	surfaceDesc.dwSize = sizeof(DDSURFACEDESC2);
-	surfaceDesc.dwBackBufferCount = 1;
-	surfaceDesc.dwFlags = DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
-	surfaceDesc.dwBackBufferCount = 1;
-	surfaceDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_COMPLEX | DDSCAPS_FLIP;
+	if (fullScreen)
+	{
+		surfaceDesc.dwFlags = DDSD_CAPS | DDSD_BACKBUFFERCOUNT;
+		surfaceDesc.dwBackBufferCount = 1;
+		surfaceDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE | DDSCAPS_COMPLEX | DDSCAPS_FLIP;
+	}
+	else
+	{
+		surfaceDesc.dwFlags = DDSD_CAPS;
+		surfaceDesc.ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+	}
 
 	if (DDFailedCheck(directDraw->CreateSurface(&surfaceDesc, &primarySurface, nullptr), L"CreateSurface failed"))
 	{
 		return false;
 	}
 
-	surfaceDesc.ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
-
-	if (DDFailedCheck(primarySurface->GetAttachedSurface(&surfaceDesc.ddsCaps, &secondarySurface), L"GetAttachedSurface failed"))
+	if (fullScreen)
 	{
-		return false;
+		surfaceDesc.ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
+
+		if (DDFailedCheck(primarySurface->GetAttachedSurface(&surfaceDesc.ddsCaps, &secondarySurface), L"GetAttachedSurface failed"))
+		{
+			return false;
+		}
 	}
 
-	if (DDFailedCheck(directDraw->CreateClipper(0, &clipper, nullptr), L"CreateClipper failed"))
+	offScreenSurface = CreateSurface(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+	if (fullScreen)
 	{
-		return false;
+		RECT clipList[] = { 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT };
+
+		clipper = AttachClipper(offScreenSurface, 1, clipList);
 	}
+	else
+	{
+		DDFailedCheck(directDraw->CreateClipper(0, &clipper, nullptr), L"CreateClipper failed");
+		clipper->SetHWnd(0, mainWindow);
 
-	RECT clipList[] = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
-
-	clipper = AttachClipper(secondarySurface, 1, clipList);
-
-	offScreenSurface = CreateSurface(1024, 1024);
+		DDFailedCheck(primarySurface->SetClipper(clipper), L"SetClipper failed");
+	}
 
     return true;
 }
@@ -680,9 +709,7 @@ VideoMemory Lock(LPDIRECTDRAWSURFACE7 surface)
 {
 	DDSURFACEDESC2 surfaceDesc;
 
-	ZeroMemory(&surfaceDesc, sizeof(DDSURFACEDESC2));
-
-	surfaceDesc.dwSize = sizeof(DDSURFACEDESC2);
+	DDRAW_INIT_STRUCT(surfaceDesc);
 
 	DDFailedCheck(surface->Lock(nullptr, &surfaceDesc, DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT, nullptr), L"Lock failed");
 
@@ -700,7 +727,31 @@ void Unlock(LPDIRECTDRAWSURFACE7 surface)
 	DDFailedCheck(surface->Unlock(nullptr), L"Lock failed");
 }
 
-void MyLoadBitmap(const TCHAR* fileName, Bitmap* bitmap)
+int32_t FlipBitmap(UCHAR* image, int32_t bytesPerLine, int32_t height)
+{
+	// this function is used to flip bottom-up .BMP images
+	int32_t loop = height / 2;
+
+	UCHAR* swapBuffer = (UCHAR*)(new UCHAR[bytesPerLine]);
+
+	// Swap in place reduce copy count
+	for (int32_t i = 0; i < loop; i++)
+	{
+		memcpy_s(swapBuffer, bytesPerLine, &image[i * bytesPerLine], bytesPerLine);
+
+		memcpy_s(&image[i * bytesPerLine], bytesPerLine, &image[bytesPerLine * height - (i + 1) * bytesPerLine], bytesPerLine);
+
+		memcpy_s(&image[bytesPerLine * height - (i + 1) * bytesPerLine], bytesPerLine, swapBuffer, bytesPerLine);
+	}
+
+	delete[] swapBuffer;
+
+	// return success
+	return(1);
+
+} // end Flip_Bitmap
+
+void MyLoadBitmap(const TCHAR* fileName, Bitmap* bitmap, bool flipVertical = true)
 {
 	// struct BITMAPFILEHEADER {
 	//	WORD    bfType;
@@ -792,35 +843,33 @@ void MyLoadBitmap(const TCHAR* fileName, Bitmap* bitmap)
 			MessageBox(nullptr, L"Read file failed.", L"Error", MB_OK);
 		}
 	}
-}
 
-int32_t FlipBitmap(UCHAR* image, int32_t bytesPerLine, int32_t height)
-{
-	// this function is used to flip bottom-up .BMP images
-	int32_t loop = height / 2;
-
-	UCHAR* swapBuffer = (UCHAR*)(new UCHAR[bytesPerLine]);
-
-	// Swap in place reduce copy count
-	for (int32_t i = 0; i < loop; i++)
+	if (flipVertical)
 	{
-		memcpy_s(swapBuffer, bytesPerLine, &image[i * bytesPerLine], bytesPerLine);
-
-		memcpy_s(&image[i * bytesPerLine], bytesPerLine, &image[bytesPerLine * height - (i + 1) * bytesPerLine], bytesPerLine);
-
-		memcpy_s(&image[bytesPerLine * height - (i + 1) * bytesPerLine], bytesPerLine, swapBuffer, bytesPerLine);
+		FlipBitmap(bitmap->imageData, bitmap->bytesPerLine, bitmap->height);
 	}
-
-	delete[] swapBuffer;
-
-	// return success
-	return(1);
-
-} // end Flip_Bitmap
+}
 
 void PlotPixel(int32_t x, int32_t y, uint32_t color, const VideoMemory& videoMemory)
 {
 	videoMemory.videoBuffer[y * videoMemory.memoryPitch + x] = color;
+}
+
+Sprite* CreateSprite(const TCHAR* fileName)
+{
+	Sprite* sprite = new Sprite();
+
+	MyLoadBitmap(fileName, &sprite->bitmap);
+
+	sprite->surface = CreateSurface(sprite->bitmap.width, sprite->bitmap.height);
+
+	VideoMemory videoMemory = Lock(sprite->surface);
+
+	DrawBitmap(sprite->bitmap, videoMemory);
+
+	Unlock(sprite->surface);
+
+	return sprite;
 }
 
 void DrawBitmap(const Bitmap& bitmap, const VideoMemory& videoMemory)
@@ -839,42 +888,462 @@ void DrawBitmap(const Bitmap& bitmap, const VideoMemory& videoMemory)
 
 			int32_t color = RGB32(255, r, g, b);
 
-			PlotPixel(x, y, color, videoMemory);
+			PlotPixel(x + windowRect.left, y + windowRect.top, color, videoMemory);
 		}
 	}
 }
 
-Sprite* CreateSprite(const TCHAR* fileName)
+void DrawSprite(const std::shared_ptr<Sprite>& sprite, int32_t x, int32_t y)
 {
-	Sprite* sprite = new Sprite();
-
-	MyLoadBitmap(fileName, &sprite->bitmap);
-
-	FlipBitmap(sprite->bitmap.imageData, sprite->bitmap.bytesPerLine, sprite->bitmap.height);
-
-	sprite->surface = CreateSurface(sprite->bitmap.width, sprite->bitmap.height);
-
-	VideoMemory videoMemory = Lock(sprite->surface);
-
-	DrawBitmap(sprite->bitmap, videoMemory);
-
-	Unlock(sprite->surface);
-
-	return sprite;
-}
-
-void DrawSprite(const std::shared_ptr<Sprite>& sprite, int x, int y)
-{
-	RECT destRect = { x, y, destRect.left + sprite->bitmap.width, destRect.top + sprite->bitmap.height };
+	RECT destRect = { x, y, destRect.left + sprite->bitmap.width * sprite->scale, destRect.top + sprite->bitmap.height * sprite->scale };
 
 	RECT sourceRect = { 0, 0, sourceRect.left + sprite->bitmap.width, sourceRect.top + sprite->bitmap.height };
 
-	DDFailedCheck(secondarySurface->Blt(&destRect, sprite->surface, &sourceRect, DDBLT_WAIT | DDBLT_KEYSRC, nullptr), L"Blt failed");
+	DDFailedCheck(offScreenSurface->Blt(&destRect, sprite->surface, &sourceRect, DDBLT_WAIT | DDBLT_KEYSRC, nullptr), L"Blt failed");
 }
 
 void DrawSprite(const std::shared_ptr<Sprite>& spriteSheet, int32_t x, int32_t y, int32_t tileX, int32_t tileY, RECT destRect, RECT sourceRect)
 {
-	DDFailedCheck(secondarySurface->Blt(&destRect, spriteSheet->surface, &sourceRect, DDBLT_WAIT | DDBLT_KEYSRC, nullptr), L"Blt failed");
+	DDFailedCheck(offScreenSurface->Blt(&destRect, spriteSheet->surface, &sourceRect, DDBLT_WAIT | DDBLT_KEYSRC, nullptr), L"Blt failed");
+}
+
+void DrawRenderables(const std::vector<std::shared_ptr<Actor>>& renderables)
+{
+	for (const auto renderable : renderables)
+	{
+		Animator animator = renderable->GetAnimator();
+
+		RECT destRect = { renderable->x, renderable->y, destRect.left + animator.tileSizeX * renderable->GetSprite()->scale,
+														destRect.top + animator.tileSizeY * renderable->GetSprite()->scale};
+
+		RECT sourceRect = { animator.tileX * animator.tileSizeX, animator.tileY * animator.tileSizeY, 
+							sourceRect.left + animator.tileSizeX, sourceRect.top + animator.tileSizeY };
+
+		DrawSprite(renderable->GetSprite(), renderable->x, renderable->y, animator.tileX, animator.tileY, destRect, sourceRect);
+	}
+}
+
+void DrawClipLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t color, uint32_t* videoBuffer, int32_t pitch, RECT clipRect)
+{
+	// This function draws a line from x0, y0 to x1, y1
+	// Using differential error term (based on Bresenham's work)
+	int32_t dx;				// Difference in x's
+	int32_t dy;				// Difference in y's
+	int32_t dx2;			// dx * 2
+	int32_t dy2;			// dy * 2
+	int32_t xIncreament;	// Amount in pixel space to move during drawings
+	int32_t yIncreament;	// Amount in pixel space to move during drawings
+	int32_t error;			// The discriminant i.e. error i.e. decision variable
+	int32_t index;			// Used for looping
+
+	ClipLine(x0, y0, x1, y1, clipRect);
+
+	// Precompute first pixel address in video buffer
+	videoBuffer = videoBuffer + x0 + y0 * pitch;
+
+	// Compute horizontal and vertical deltas
+	dx = x1 - x0;
+	dy = y1 - y0;
+
+	// Test which direction the line is going in i.e. slope angle
+
+	// Line is moving right
+	if (dx >= 0)
+	{
+
+		xIncreament = 1;
+	}
+	// Line is moving left
+	else
+	{
+		xIncreament = -1;
+		dx = -dx;	// Need absolute value
+	}
+
+	// Test y component of slope
+
+	// Line is moving down
+	if (dy >= 0)
+	{
+		yIncreament = pitch;
+	}
+	// Line is moving up
+	else
+	{
+		yIncreament = -pitch;
+		dy = -dy;	// Need absolute value
+	}
+	
+	// Compute (dx, dy) * 2
+	dx2 = dx << 1;
+	dy2 = dy << 1;
+
+	// Now need on which delta is greater we can draw the line
+
+	// |slope <= 1|
+	if (dx > dy)
+	{
+		// Initialize error term
+		error = dy2 - dx;
+
+		// Draw the line
+		for (index = 0; index <= dx; index++)
+		{
+			// Set the pixel
+			*videoBuffer = color;
+
+			// Test if error has overflowed
+			if (error >= 0)
+			{
+				error -= dx2;
+
+				// Move to next line
+				videoBuffer += yIncreament;
+			}
+
+			// Adjust the error term
+			error += dy2;
+
+			// Move to the next pixel
+			videoBuffer += xIncreament;
+		}
+	}
+	// |slope > 1|
+	else
+	{
+		// Initialize error term
+		error = dx2 - dy;
+
+		// Draw the line
+		for (index = 0; index <= dy; index++)
+		{
+			// Set the pixel
+			*videoBuffer = color;
+
+			// Test if error overflowed
+			if (error >= 0)
+			{
+				error -= dy2;
+
+				// Move to next line
+				videoBuffer += xIncreament;
+			}
+
+			// Adjust the error term
+			error += dx2;
+
+			// Move to the next pixel
+			videoBuffer += yIncreament;
+		}
+	}
+}
+
+bool ClipLine(int32_t& x1, int32_t& y1, int32_t& x2, int32_t& y2, RECT clipRect)
+{
+	// Internal clipping codes
+	const uint32_t CLIP_CODE_C =	 0x0000;
+	const uint32_t CLIP_CODE_NORTH = 0x0008;
+	const uint32_t CLIP_CODE_SOUTH = 0x0004;
+	const uint32_t CLIP_CODE_EAST =  0x0002;
+	const uint32_t CLIP_CODE_WEST =  0x0001;
+
+	const uint32_t CLIP_CODE_NORTH_EAST = 0x000A;
+	const uint32_t CLIP_CODE_SOUTH_EAST = 0x0006;
+	const uint32_t CLIP_CODE_NOUTH_WEST = 0x0009;
+	const uint32_t CLIP_CODE_SOUTH_WEST = 0x0005;
+
+	int32_t xc1 = x1;
+	int32_t yc1 = y1;
+	int32_t xc2 = x2;
+	int32_t yc2 = y2;
+
+	int32_t p1Code = 0;
+	int32_t p2Code = 0;
+
+	int32_t minClipX = clipRect.left;
+	int32_t maxClipX = clipRect.right;
+	int32_t minClipY = clipRect.top;
+	int32_t maxClipY = clipRect.bottom;
+
+	// Determine codes for p1 and p2
+	if (y1 < minClipY)
+	{
+		p1Code |= CLIP_CODE_NORTH;
+	}
+	else if (y1 > maxClipY)
+	{
+		p1Code |= CLIP_CODE_SOUTH;
+	}
+
+	if (x1 < minClipX)
+	{
+		p1Code |= CLIP_CODE_WEST;
+	}
+	else if (x1 > maxClipX)
+	{
+		p1Code |= CLIP_CODE_EAST;
+	}
+
+	if (y2 < minClipY)
+	{
+		p2Code |= CLIP_CODE_NORTH;
+	}
+	else if (y2 > maxClipY)
+	{
+		p2Code |= CLIP_CODE_SOUTH;
+	}
+
+	if (x2 < minClipX)
+	{
+		p2Code |= CLIP_CODE_WEST;
+	}
+	else if (x2 > maxClipX)
+	{
+		p2Code |= CLIP_CODE_EAST;
+	}
+
+	// Try and trivially reject
+	if ((p1Code & p2Code))
+	{
+		return false;
+	}
+
+	// Test for totally visible, if so leave points untouched
+	if (p1Code == 0 && p2Code == 0)
+	{
+		return true;
+	}
+
+	// Determine end clip point for p1
+	switch (p1Code)
+	{
+	case CLIP_CODE_C:
+		break;
+
+	case CLIP_CODE_NORTH:
+	{
+		yc1 = minClipY;
+		xc1 = x1 + 0.5 + (minClipY - y1) * (x2 - x1) / (y2 - y1);
+	}
+	
+	break;
+
+	case CLIP_CODE_SOUTH:
+	{
+		yc1 = maxClipY;
+		xc1 = x1 + 0.5 + (maxClipY - y1) * (x2 - x1) / (y2 - y1);
+	}
+	
+	break;
+
+	case CLIP_CODE_WEST:
+	{
+		xc1 = minClipX;
+		yc1 = y1 + 0.5 + (minClipX - x1) * (y2 - y1) / (x2 - x1);
+	}
+	
+	break;
+
+	case CLIP_CODE_EAST:
+	{
+		xc1 = maxClipX;
+		yc1 = y1 + 0.5 + (maxClipX - x1) * (y2 - y1) / (x2 - x1);
+	}
+	
+	break;
+
+	// These cases are more complex, must compute 2 intersections
+	case CLIP_CODE_NORTH_EAST:
+	{
+		// North hline intersection
+		yc1 = minClipY;
+		xc1 = x1 + 0.5 + (minClipY - y1) * (x2 - x1) / (y2 - y1);
+
+		// Test if intersection is valid
+		// if so then done, else compute next
+		if (xc1 < minClipX || xc1 > maxClipX)
+		{
+			// East vline intersection
+			xc1 = maxClipX;
+			yc1 = y1 + 0.5 + (maxClipX - x1) * (y2 - y1) / (x2 - x1);
+		}
+	}
+		
+	break;
+
+	case CLIP_CODE_SOUTH_EAST:
+	{
+		// South hline intersection
+		yc1 = maxClipY;
+		xc1 = x1 + 0.5 + (maxClipY - y1) * (x2 - x1) / (y2 - y1);
+
+		// Test if intersection is valid
+		// if so then done, else compute next
+		if (xc1 < minClipX || xc1 > maxClipX)
+		{
+			// East vline intersection
+			xc1 = maxClipX;
+			yc1 = y1 + 0.5 + (maxClipX - x1) * (y2 - y1) / (x2 - x1);
+		}
+	}
+		
+	break;
+
+	case CLIP_CODE_NOUTH_WEST:
+	{
+		// North hline intersection
+		yc1 = minClipY;
+		xc1 = x1 + 0.5 + (minClipY - y1) * (x2 - x1) / (y2 - y1);
+
+		// Test if intersection is valid
+		// if so then done, else compute next
+		if (xc1 < minClipX || xc1 > maxClipX)
+		{
+			xc1 = minClipX;
+			yc1 = y1 + 0.5 + (minClipX - x1) * (y2 - y1) / (x2 - x1);
+		}
+	}
+
+	break;
+
+	case CLIP_CODE_SOUTH_WEST:
+	{
+		// South hline intersection
+		yc1 = maxClipY;
+		xc1 = x1 + 0.5 + (maxClipY - y1) * (x1 - x1) / (y1 - y1);
+
+		// Test if intersection is valid
+		// if so then done, else compute next
+		if (xc1 < minClipX || xc1 > maxClipX)
+		{
+			xc1 = minClipX;
+			yc1 = y1 + 0.5 + (minClipX - x1) * (y2 - y1) / (x2, -x1);
+		}
+	}
+
+	break;
+
+	default:
+		break;
+	}
+
+	// Do bounds check
+	if ((xc1 < minClipX) || (xc1 > maxClipX) ||
+		(yc1 < minClipY) || (yc1 > maxClipY) ||
+		(xc2 < minClipX) || (xc2 > maxClipX) ||
+		(yc2 < minClipY) || (yc2 > maxClipY))
+	{
+		return false;
+	}
+
+	// Store vars back
+	x1 = xc1;
+	y1 = yc1;
+	x2 = xc2;
+	y2 = yc2;
+
+	return true;
+}
+
+bool DrawPolygon2D(Polygon2D* polygon, uint32_t* videoBuffer, int32_t pitch)
+{
+	// Test if the polygon is visible
+	if (polygon->state)
+	{
+		// Loop through and draw a line from vertices 1 to n
+		for (int index = 0; index < polygon->numVertices - 1; index++)
+		{
+			// Draw line from ith to ith + 1 vertex
+			DrawClipLine(polygon->vertices[index].x + polygon->x0,
+						 polygon->vertices[index].y + polygon->y0,
+						 polygon->vertices[index + 1].x + polygon->x0,
+						 polygon->vertices[index + 1].y + polygon->y0, 
+						 polygon->color,
+						 videoBuffer, pitch, windowRect);
+		}
+
+		// Now close up polygon
+		// Draw line from last vertex to 0th
+		DrawClipLine(polygon->vertices[0].x + polygon->x0,
+					 polygon->vertices[0].y + polygon->y0,
+					 polygon->vertices[polygon->numVertices - 1].x + polygon->x0,
+					 polygon->vertices[polygon->numVertices - 1].y + polygon->y0,
+					 polygon->color,
+					 videoBuffer, pitch, windowRect);
+
+		return true;
+	}
+
+	return false;
+}
+
+void InitializeTriangles()
+{
+	for (int i = 0; i < triangleCount; i++)
+	{
+		triangles[i].x0 = windowRect.left + rand() % WINDOW_WIDTH;
+		triangles[i].y0 = windowRect.top + rand() % WINDOW_HEIGHT;
+
+		//if (triangles[i].x0 == windowRect.left)
+		//{
+		//	triangles[i].x0 += 50;
+		//}
+
+		//if (triangles[i].x0 == windowRect.right)
+		//{
+		//	triangles[i].x0 -= 50;
+		//}
+
+		//if (triangles[i].y0 == windowRect.top)
+		//{
+		//	triangles[i].y0 += 50;
+		//}
+
+		//if (triangles[i].y0 == windowRect.bottom)
+		//{
+		//	triangles[i].y0 -= 50;
+		//}
+
+		triangles[i].xv = 0; // rand() % 10 + 5;
+		triangles[i].yv = 0; // rand() % 10 + 5;
+		triangles[i].state = 1;
+		triangles[i].numVertices = 3;
+		triangles[i].color = Color::Yellow;
+
+		triangles[i].vertices = new Vertex2D[triangles[i].numVertices];
+		triangles[i].vertices[0] = { 0, -50 };
+		triangles[i].vertices[1] = { -50, 50 };
+		triangles[i].vertices[2] = { 50, 50 };
+	}
+}
+
+void MoveTriangles()
+{
+	for (int i = 0; i < triangleCount; i++)
+	{
+		triangles[i].x0 += triangles[i].xv;
+		triangles[i].y0 += triangles[i].yv;
+
+		if (triangles[i].x0 < windowRect.left || triangles[i].x0 > windowRect.right)
+		{
+			triangles[i].xv = -triangles[i].xv;
+			triangles[i].x0 += triangles[i].xv;
+		}
+
+		if (triangles[i].y0 < windowRect.top || triangles[i].y0 > windowRect.bottom)
+		{
+			triangles[i].yv = -triangles[i].yv;
+			triangles[i].y0 += triangles[i].yv;
+		}
+	}
+}
+
+void DrawTriangles(const VideoMemory& videoMemory)
+{
+	for (int i = 0; i < triangleCount; i++)
+	{
+		DrawPolygon2D(&triangles[i], videoMemory.videoBuffer, videoMemory.memoryPitch);
+	}
 }
 
 void Clear(uint32_t color)
@@ -884,8 +1353,22 @@ void Clear(uint32_t color)
 	DDRAW_INIT_STRUCT(ddbltfx);
 
 	ddbltfx.dwFillColor = color;
-	
-	DDFailedCheck(secondarySurface->Blt(nullptr, nullptr, nullptr, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx), L"Blt failed");
+
+	auto surface = fullScreen ? secondarySurface : offScreenSurface;
+
+	DDFailedCheck(surface->Blt(nullptr, nullptr, nullptr, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx), L"Blt failed");
+
+	//DDFailedCheck(offScreenSurface->Blt(nullptr, nullptr, nullptr, DDBLT_COLORFILL | DDBLT_WAIT, &ddbltfx), L"Blt failed");
+}
+
+bool Present()
+{
+	if (fullScreen)
+	{
+		DDFailedCheck(primarySurface->Flip(nullptr, DDFLIP_WAIT), L"Flip failed");
+	}
+
+	return true;
 }
 
 bool GameInit()
@@ -894,53 +1377,48 @@ bool GameInit()
 
 	srand(timeGetTime());
 
-	for (size_t i = 0; i < 100; i++)
-	{
-		happyFaces[i].x = rand() % SCREEN_WIDTH;
-		happyFaces[i].y = rand() % SCREEN_HEIGHT;
-		happyFaces[i].vx = -5 + rand() % 8;
-		happyFaces[i].vy = -5 + rand() % 10;
-	}
+	//UpdateClientRect(mainWindow, &windowRect);
+
+	//for (size_t i = 0; i < 100; i++)
+	//{
+	//	happyFaces[i].x = rand() % SCREEN_WIDTH;
+	//	happyFaces[i].y = rand() % SCREEN_HEIGHT;
+	//	happyFaces[i].vx = -5 + rand() % 8;
+	//	happyFaces[i].vy = -5 + rand() % 10;
+	//}
 
 	sprite = std::shared_ptr<Sprite>(CreateSprite(L"kitten.bmp"));
 
-	std::shared_ptr<Sprite> player(CreateSprite(L"Estelle.bmp"));
+	//std::shared_ptr<Sprite> player(CreateSprite(L"Estelle.bmp"));
 
-	for (int i = 0; i < 100; i++)
-	{
-		auto actor = std::make_shared<Actor>();
+	MyLoadBitmap(L"test.bmp", &bitmap);
 
-		actor->SetSprite(player);
+	//for (int i = 0; i < 100; i++)
+	//{
+	//	auto actor = std::make_shared<Actor>();
 
-		actor->SetAnimator({ 0, rand() % 8, 128, 128, 8 });
+	//	actor->SetSprite(player);
 
-		renderables.push_back(actor);
+	//	actor->SetAnimator({ 0, rand() % 8, 128, 128, 8 });
 
-		actor->SetPosition(rand() % SCREEN_WIDTH, rand() % SCREEN_HEIGHT);
-	}
+	//	renderables.push_back(actor);
 
-	return true;
-}
+	//	actor->SetPosition(rand() % windowRect.right - windowRect.left, rand() % windowRect.bottom - windowRect.top);
+	//}
 
-void DrawRenderables(const std::vector<std::shared_ptr<Actor>>& renderables)
-{
-	for (const auto renderable : renderables)
-	{
-		Animator animator = renderable->GetAnimator();
+	triangle = std::make_shared<Polygon2D>();
 
-		RECT destRect = { renderable->x, renderable->y, destRect.left + 
-						  animator.tileSizeX, destRect.top + animator.tileSizeY };
+	triangle->state = 1;
+	triangle->numVertices = 3;
+	triangle->color = Color::Yellow;
+	triangle->x0 = windowRect.left + 200;
+	triangle->y0 = windowRect.top + 200;
+	triangle->vertices = new Vertex2D[triangle->numVertices];
+	triangle->vertices[0] = { 0, -50 };
+	triangle->vertices[1] = { -50, 50 };
+	triangle->vertices[2] = { 50, 50 };
 
-		RECT sourceRect = { animator.tileX * animator.tileSizeX, animator.tileY * animator.tileSizeY, 
-							sourceRect.left + animator.tileSizeX, sourceRect.top + animator.tileSizeY };
-
-		DrawSprite(renderable->GetSprite(), renderable->x, renderable->y, animator.tileX, animator.tileY, destRect, sourceRect);
-	}
-}
-
-bool Present()
-{
-	DDFailedCheck(primarySurface->Flip(nullptr, DDFLIP_WAIT), L"Flip failed");
+	InitializeTriangles();
 
 	return true;
 }
@@ -957,17 +1435,49 @@ bool GameMain(float deltaTime)
 		return false;
 	}
 
-	Clear(RGB32(255, 100, 149, 237));
+	//UpdateClientRect(mainWindow, &windowRect);
 
-	DrawSprite(sprite, 100, 100);
+	GetClientRect(mainWindow, &windowRect); // get client coords
+	ClientToScreen(mainWindow, reinterpret_cast<POINT*>(&windowRect.left)); // convert top-left
+	ClientToScreen(mainWindow, reinterpret_cast<POINT*>(&windowRect.right)); // convert bottom-right
 
-	DrawRenderables(renderables);
+	Clear(Color::Black);
 
-	positionX += deltaTime * 10;
+	VideoMemory videoMemory = Lock(offScreenSurface);
 
-	renderables[0]->SetPosition(positionX, 0);
+	//DrawBitmap(bitmap, videoMemory);
 
-	renderables[0]->UpdateAnimator(deltaTime);
+	int x0 = windowRect.left;
+	int y0 = windowRect.top;
+	int x1 = windowRect.right;
+	int y1 = windowRect.bottom;
+
+	RECT clipRect = {windowRect.left + 100, windowRect.top + 100, 
+					 windowRect.left + 200, windowRect.top + 200};
+
+	//DrawClipLine(x0, y0, x1, y1, Color::Red, videoMemory.videoBuffer, videoMemory.memoryPitch, windowRect);
+
+	//DrawPolygon2D(triangle.get(), videoMemory.videoBuffer, videoMemory.memoryPitch);
+
+	//MoveTriangles();
+
+	//DrawTriangles(videoMemory);
+
+	Unlock(offScreenSurface);
+
+	DrawSprite(sprite, windowRect.left, windowRect.top);
+
+	//DrawRenderables(renderables);
+
+	auto surface = fullScreen ? secondarySurface : primarySurface;
+
+	DDFailedCheck(surface->Blt(nullptr, offScreenSurface, nullptr, DDBLT_WAIT, nullptr), L"Blt failed");
+
+	//positionX += deltaTime * 10;
+
+	//renderables[0]->SetPosition(positionX, 0);
+
+	//renderables[0]->UpdateAnimator(deltaTime);
 
 	// Happy faces
 	{
@@ -1139,8 +1649,15 @@ BOOL InitInstance(HINSTANCE hInstance, int32_t nCmdShow)
 {
    hInst = hInstance; // Store instance handle in our global variable
 
-   mainWindow = CreateWindowW(szWindowClass, szTitle, WS_POPUP,
-      CW_USEDEFAULT, 0, SCREEN_WIDTH, SCREEN_HEIGHT, nullptr, nullptr, hInstance, nullptr);
+   DWORD style = WS_OVERLAPPEDWINDOW;
+
+   if (fullScreen)
+   {
+	   style = WS_POPUP;
+   }
+
+   mainWindow = CreateWindowW(szWindowClass, szTitle, style,
+      CW_USEDEFAULT, 0, 1280, 720, nullptr, nullptr, hInstance, nullptr);
 
    if (!mainWindow)
    {
@@ -1149,6 +1666,14 @@ BOOL InitInstance(HINSTANCE hInstance, int32_t nCmdShow)
 
    ShowWindow(mainWindow, nCmdShow);
    UpdateWindow(mainWindow);
+
+   //AdjustWindowRectEx(&windowRect, GetWindowStyle(mainWindow),
+	  // GetMenu(mainWindow) != nullptr,
+	  // GetWindowExStyle(mainWindow));
+
+   //MoveWindow(mainWindow, CW_USEDEFAULT, CW_USEDEFAULT,
+	  // windowRect.right - windowRect.left,
+	  // windowRect.bottom - windowRect.top, FALSE);
 
    return TRUE;
 }
