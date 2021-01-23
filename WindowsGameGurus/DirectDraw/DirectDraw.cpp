@@ -332,8 +332,8 @@ private:
 
 struct Vertex2D
 {
-	int32_t x;
-	int32_t y;
+	float x;
+	float y;
 };
 
 struct Polygon2D
@@ -341,6 +341,8 @@ struct Polygon2D
 	Polygon2D() {}
 	~Polygon2D() { delete[] vertices; }
 
+	int32_t startX = 0;					// Initial position of center of polygon
+	int32_t startY = 0;
 	int32_t x0 = 0;					// Position of center of polygon
 	int32_t y0 = 0;
 	int32_t xv = 0;					// Initial velocity
@@ -392,7 +394,7 @@ EXTERN_C ULONG64 mySub(ULONG64 u1, ULONG64 u2);
 
 int32_t FlipBitmap(UCHAR* image, int32_t bytesPerLine, int32_t height);
 
-void DrawBitmap(const Bitmap& bitmap, const VideoMemory& videoMemory);
+void DrawBitmap(const Bitmap& bitmap, const VideoMemory& videoMemory, bool isBackbuffer = false);
 
 void DrawSprite(const std::shared_ptr<Sprite>& sprite, int32_t x, int32_t y);
 
@@ -404,11 +406,19 @@ void DrawClipLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1, int32_t color,
 
 bool ClipLine(int32_t& x1, int32_t& y1, int32_t& x2, int32_t& y2, RECT clipRect);
 
-bool DrawPolygon2D(Polygon2D* polygon, uint32_t* videoBuffer, int32_t pitch);
+void DrawPolygon2D(Polygon2D* polygon, uint32_t* videoBuffer, int32_t pitch);
+
+void TranslatePolygon2D(Polygon2D* polygon, int32_t dx, int32_t dy);
+
+void RotatePolygon2D(Polygon2D* polygon, float angle);
+
+void ScalePolygon2D(Polygon2D* polygon, float scaleX, float scaleY);
 
 void InitializeTriangles();
 
 void MoveTriangles();
+
+void RotateTriangles();
 
 void DrawTriangles();
 
@@ -872,7 +882,7 @@ Sprite* CreateSprite(const TCHAR* fileName)
 	return sprite;
 }
 
-void DrawBitmap(const Bitmap& bitmap, const VideoMemory& videoMemory)
+void DrawBitmap(const Bitmap& bitmap, const VideoMemory& videoMemory, bool isBackbuffer)
 {
 	int32_t pixelOffset = bitmap.bpp / 8;
 
@@ -888,7 +898,14 @@ void DrawBitmap(const Bitmap& bitmap, const VideoMemory& videoMemory)
 
 			int32_t color = RGB32(255, r, g, b);
 
-			PlotPixel(x + windowRect.left, y + windowRect.top, color, videoMemory);
+			if (isBackbuffer)
+			{
+				PlotPixel(x + windowRect.left, y + windowRect.top, color, videoMemory);
+			}
+			else
+			{
+				PlotPixel(x, y, color, videoMemory);
+			}
 		}
 	}
 }
@@ -1245,7 +1262,7 @@ bool ClipLine(int32_t& x1, int32_t& y1, int32_t& x2, int32_t& y2, RECT clipRect)
 	return true;
 }
 
-bool DrawPolygon2D(Polygon2D* polygon, uint32_t* videoBuffer, int32_t pitch)
+void DrawPolygon2D(Polygon2D* polygon, uint32_t* videoBuffer, int32_t pitch)
 {
 	// Test if the polygon is visible
 	if (polygon->state)
@@ -1270,39 +1287,81 @@ bool DrawPolygon2D(Polygon2D* polygon, uint32_t* videoBuffer, int32_t pitch)
 					 polygon->vertices[polygon->numVertices - 1].y + polygon->y0,
 					 polygon->color,
 					 videoBuffer, pitch, windowRect);
+	}
+}
 
-		return true;
+void TranslatePolygon2D(Polygon2D* polygon, int32_t dx, int32_t dy)
+{
+	if (polygon == nullptr)
+	{
+		return;
 	}
 
-	return false;
+	// Translate
+	polygon->x0 = windowRect.left + polygon->startX + dx;
+	polygon->y0 = windowRect.top + polygon->startY + dy;
+}
+
+void RotatePolygon2D(Polygon2D* polygon, float angle)
+{
+	if (polygon == nullptr)
+	{
+		return;
+	}
+
+	for (int currentVertex = 0; currentVertex < polygon->numVertices; currentVertex++)
+	{
+		float& x = polygon->vertices[currentVertex].x;
+		float& y = polygon->vertices[currentVertex].y;
+
+		x = x * cosf(angle) - y * sinf(angle);
+		y = x * sinf(angle) + y * cosf(angle);
+	}
+}
+
+void ScalePolygon2D(Polygon2D* polygon, float scaleX, float scaleY)
+{
+	if (polygon == nullptr)
+	{
+		return;
+	}
+
+	for (int currentVertex = 0; currentVertex < polygon->numVertices; currentVertex++)
+	{
+		polygon->vertices[currentVertex].x *= scaleX;
+		polygon->vertices[currentVertex].y *= scaleY;
+	}
 }
 
 void InitializeTriangles()
 {
 	for (int i = 0; i < triangleCount; i++)
 	{
-		triangles[i].x0 = windowRect.left + rand() % WINDOW_WIDTH;
-		triangles[i].y0 = windowRect.top + rand() % WINDOW_HEIGHT;
+		triangles[i].startX = rand() % WINDOW_WIDTH;
+		triangles[i].startY = rand() % WINDOW_HEIGHT;
 
-		//if (triangles[i].x0 == windowRect.left)
-		//{
-		//	triangles[i].x0 += 50;
-		//}
+		if (triangles[i].startX == windowRect.left)
+		{
+			triangles[i].startX += 50;
+		}
 
-		//if (triangles[i].x0 == windowRect.right)
-		//{
-		//	triangles[i].x0 -= 50;
-		//}
+		if (triangles[i].startX == windowRect.right)
+		{
+			triangles[i].startX -= 50;
+		}
 
-		//if (triangles[i].y0 == windowRect.top)
-		//{
-		//	triangles[i].y0 += 50;
-		//}
+		if (triangles[i].startY == windowRect.top)
+		{
+			triangles[i].startY += 50;
+		}
 
-		//if (triangles[i].y0 == windowRect.bottom)
-		//{
-		//	triangles[i].y0 -= 50;
-		//}
+		if (triangles[i].startY == windowRect.bottom)
+		{
+			triangles[i].startY -= 50;
+		}
+
+		triangles[i].x0 = triangles[i].startX;
+		triangles[i].y0 = triangles[i].startY;
 
 		triangles[i].xv = 0; // rand() % 10 + 5;
 		triangles[i].yv = 0; // rand() % 10 + 5;
@@ -1321,8 +1380,7 @@ void MoveTriangles()
 {
 	for (int i = 0; i < triangleCount; i++)
 	{
-		triangles[i].x0 += triangles[i].xv;
-		triangles[i].y0 += triangles[i].yv;
+		TranslatePolygon2D(&triangles[i], triangles[i].xv, triangles[i].yv);
 
 		if (triangles[i].x0 < windowRect.left || triangles[i].x0 > windowRect.right)
 		{
@@ -1377,7 +1435,7 @@ bool GameInit()
 
 	srand(timeGetTime());
 
-	//UpdateClientRect(mainWindow, &windowRect);
+	UpdateClientRect(mainWindow, &windowRect);
 
 	//for (size_t i = 0; i < 100; i++)
 	//{
@@ -1411,8 +1469,10 @@ bool GameInit()
 	triangle->state = 1;
 	triangle->numVertices = 3;
 	triangle->color = Color::Yellow;
-	triangle->x0 = windowRect.left + 200;
-	triangle->y0 = windowRect.top + 200;
+	triangle->startX = windowRect.left + 200;
+	triangle->startY = windowRect.top + 200;
+	triangle->x0 = triangle->startX;
+	triangle->y0 = triangle->startY;
 	triangle->vertices = new Vertex2D[triangle->numVertices];
 	triangle->vertices[0] = { 0, -50 };
 	triangle->vertices[1] = { -50, 50 };
@@ -1435,11 +1495,7 @@ bool GameMain(float deltaTime)
 		return false;
 	}
 
-	//UpdateClientRect(mainWindow, &windowRect);
-
-	GetClientRect(mainWindow, &windowRect); // get client coords
-	ClientToScreen(mainWindow, reinterpret_cast<POINT*>(&windowRect.left)); // convert top-left
-	ClientToScreen(mainWindow, reinterpret_cast<POINT*>(&windowRect.right)); // convert bottom-right
+	UpdateClientRect(mainWindow, &windowRect);
 
 	Clear(Color::Black);
 
@@ -1457,7 +1513,22 @@ bool GameMain(float deltaTime)
 
 	//DrawClipLine(x0, y0, x1, y1, Color::Red, videoMemory.videoBuffer, videoMemory.memoryPitch, windowRect);
 
-	//DrawPolygon2D(triangle.get(), videoMemory.videoBuffer, videoMemory.memoryPitch);
+	triangle->x0 = windowRect.left + triangle->startX;
+	triangle->y0 = windowRect.top + triangle->startY;
+
+	DrawPolygon2D(triangle.get(), videoMemory.videoBuffer, videoMemory.memoryPitch);
+
+	RotatePolygon2D(triangle.get(), deltaTime);
+
+	if (GetAsyncKeyState('A') & 0x8000)
+	{
+		ScalePolygon2D(triangle.get(), 1.1f, 1.1f);
+	}
+	
+	if (GetAsyncKeyState('S') & 0x8000)
+	{
+		ScalePolygon2D(triangle.get(), 0.9f, 0.9f);
+	}
 
 	//MoveTriangles();
 
@@ -1465,7 +1536,8 @@ bool GameMain(float deltaTime)
 
 	Unlock(offScreenSurface);
 
-	DrawSprite(sprite, windowRect.left, windowRect.top);
+	// TODO DDERR_INVALIDRECT
+	//DrawSprite(sprite, windowRect.left, windowRect.top);
 
 	//DrawRenderables(renderables);
 
