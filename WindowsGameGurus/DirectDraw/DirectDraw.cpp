@@ -73,6 +73,7 @@ UCHAR happyBitmap[256] = { 0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
 							0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,
 							0,0,0,1,1,0,0,0,0,0,0,1,1,0,0,0,
 							0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0 };
+
 UCHAR sadBitmap[64] = { 0,0,0,0,0,0,0,0,
 						0,0,1,1,1,1,0,0,
 						0,1,0,1,1,0,1,0,
@@ -90,6 +91,7 @@ struct HappyFace
 	int32_t vy;
 };
 
+// Bitmap info
 struct Bitmap
 {
 	Bitmap()
@@ -143,12 +145,12 @@ struct Bitmap
 
 	~Bitmap() { delete[] imageData; }
 
-	int32_t width;
-	int32_t height;
-	int32_t bpp;
-	int32_t imageSize;
-	int32_t bytesPerLine;
-	UCHAR* imageData;
+	int32_t width;				// Image width
+	int32_t height;				// Image height
+	int32_t bpp;				// Color depth (bits per pixel)
+	int32_t imageSize;			// Image data size (bytes)
+	int32_t bytesPerLine;		// A scan line length (bytes, should be a multiple of 4)
+	UCHAR* imageData;			// Actual image data buffer
 
 private:
 
@@ -163,6 +165,7 @@ private:
 	}
 };
 
+// Simple Sprite
 struct Sprite
 {
 	Sprite() 
@@ -212,9 +215,9 @@ struct Sprite
 	
 	~Sprite() { SAFE_RELEASE(surface); }
 
-	float scale;
-	Bitmap bitmap;
-	LPDIRECTDRAWSURFACE7 surface;
+	float scale;					// Scale factor
+	Bitmap bitmap;					// bitmap data
+	LPDIRECTDRAWSURFACE7 surface;	// DirectDraw surface to  draw
 };
 
 class Renderable
@@ -222,6 +225,7 @@ class Renderable
 
 };
 
+// Sprite animation
 class Animator
 {
 public:
@@ -229,29 +233,41 @@ public:
 	Animator()
 		: tileX(0),
 		  tileY(0),
-		  tileSizeX(0),
-		  tileSizeY(0),
+		  tileWidth(0),
+		  tileHeight(0),
 		  frames(0),
 		  animationTime(0.0f),
-		  animationFPS(15.0f)
-	{}
+		  animationFPS(15.0f),
+		  timePerFrame(0.0f)
+	{
+	}
 
 	Animator(int32_t inTileX, int32_t inTileY, int32_t inTileSizeX, int32_t inTileSizeY, int32_t inFrames)
 		: tileX(inTileX),
 		tileY(inTileY),
-		tileSizeX(inTileSizeX),
-		tileSizeY(inTileSizeY),
+		tileWidth(inTileSizeX),
+		tileHeight(inTileSizeY),
 		frames(inFrames),
 		animationTime(0.0f),
 		animationFPS(15.0f)
 	{
-
+		timePerFrame = 1.0f / animationFPS;
 	}
 
+	void SetAnimationFPS(float inAnimationFPS)
+	{
+		animationFPS = inAnimationFPS;
+
+		timePerFrame = 1.0f / animationFPS;
+	}
+
+	// Update sprite animation
 	void Update(float deltaTime)
 	{
 		animationTime += deltaTime;
 
+		// If animationTime time greater than timePerFrame
+		// When should switch to next animation frame
 		if (animationTime >= 1.0f / animationFPS)
 		{
 			animationTime = 0.0f;
@@ -265,13 +281,14 @@ public:
 		}
 	}
 
-	int32_t tileX;
-	int32_t tileY;
-	int32_t tileSizeX;
-	int32_t tileSizeY;
-	int32_t frames;
-	float animationTime;
-	float animationFPS;
+	int32_t tileX;			// Index into sprite sheet
+	int32_t tileY;			
+	int32_t tileWidth;		// Tile with
+	int32_t tileHeight;		// Tile height
+	int32_t frames;			// Animation frame count
+	float animationTime;	// Accumulated animation time
+	float animationFPS;		// animation frame rate
+	float timePerFrame;
 };
 
 class Actor :public Renderable
@@ -341,7 +358,7 @@ struct Polygon2D
 	Polygon2D() {}
 	~Polygon2D() { delete[] vertices; }
 
-	int32_t startX = 0;					// Initial position of center of polygon
+	int32_t startX = 0;				// Initial position of center of polygon
 	int32_t startY = 0;
 	int32_t x0 = 0;					// Position of center of polygon
 	int32_t y0 = 0;
@@ -354,8 +371,10 @@ struct Polygon2D
 	Vertex2D* vertices = nullptr;	// Pointer to vertex list
 };
 
+// All renderable objects.
 std::vector<std::shared_ptr<Actor>> renderables;
 
+// A triangle
 std::shared_ptr<Polygon2D> triangle;
 
 Polygon2D triangles[100];
@@ -364,6 +383,7 @@ int32_t triangleCount = 5;
 
 std::shared_ptr<Sprite> sprite;
 
+// Video buffer base pointer and pitch 
 struct VideoMemory
 {
 	int32_t memoryPitch = 0;
@@ -930,11 +950,11 @@ void DrawRenderables(const std::vector<std::shared_ptr<Actor>>& renderables)
 	{
 		Animator animator = renderable->GetAnimator();
 
-		RECT destRect = { renderable->x, renderable->y, destRect.left + animator.tileSizeX * renderable->GetSprite()->scale,
-														destRect.top + animator.tileSizeY * renderable->GetSprite()->scale};
+		RECT destRect = { renderable->x, renderable->y, destRect.left + animator.tileWidth * renderable->GetSprite()->scale,
+														destRect.top + animator.tileHeight * renderable->GetSprite()->scale};
 
-		RECT sourceRect = { animator.tileX * animator.tileSizeX, animator.tileY * animator.tileSizeY, 
-							sourceRect.left + animator.tileSizeX, sourceRect.top + animator.tileSizeY };
+		RECT sourceRect = { animator.tileX * animator.tileWidth, animator.tileY * animator.tileHeight, 
+							sourceRect.left + animator.tileWidth, sourceRect.top + animator.tileHeight };
 
 		DrawSprite(renderable->GetSprite(), renderable->x, renderable->y, animator.tileX, animator.tileY, destRect, sourceRect);
 	}
